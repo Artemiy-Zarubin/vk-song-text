@@ -17,8 +17,8 @@
 
 ---
 
-## Как работает
-![Пример работы](https://github.com/Artemiy-Zarubin/vk-song-text/blob/main/howworks2.gif?raw=true)
+## Как работает?
+![Пример работы](https://github.com/Artemiy-Zarubin/vk-song-text/blob/main/howworks.gif?raw=true)
 
 Скрипт предоставляет более надежное решение, чем текущая реализация в VK, обеспечивая доступ к текстам большинства песен.
 

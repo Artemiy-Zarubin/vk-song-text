@@ -10,6 +10,7 @@
 // @downloadURL  https://github.com/Artemiy-Zarubin/vk-song-text/raw/refs/heads/main/vk-song-text.user.js
 // ==/UserScript==
 
+// hi
 (function() {
     let songIndex = 0;
     const songContainerMap = new Map();
