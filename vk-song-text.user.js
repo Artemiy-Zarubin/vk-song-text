@@ -6,8 +6,8 @@
 // @author       @ArtemiyZarubin [Artemiy Zarubin]
 // @match        https://vk.com/aud*
 // @require      http://code.jquery.com/jquery-latest.js
-// @updateURL
-// @downloadURL
+// @updateURL    https://github.com/Artemiy-Zarubin/vk-song-text/raw/refs/heads/main/vk-song-text.user.js
+// @downloadURL  https://github.com/Artemiy-Zarubin/vk-song-text/raw/refs/heads/main/vk-song-text.user.js
 // ==/UserScript==
 
 (function() {
