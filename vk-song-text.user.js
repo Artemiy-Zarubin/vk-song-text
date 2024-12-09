@@ -76,7 +76,7 @@
         const proxyUrl = availableProxies[proxyIndex];
 
         const lyricsDiv = document.getElementById(`lyricsContainer${index}`);
-        lyricsDiv.innerText = 'Ищем текст..'
+        lyricsDiv.innerHTML = 'Ищем текст.. tg: <a href="https://t.me/zadevv" target="_blank">@zadevv</a>';
 
         fetch(proxyUrl + apiUrl)
             .then(response => response.json())
@@ -107,7 +107,7 @@
                         .catch(err => console.error('Error fetching lyrics page:', err));
                 } else {
                     console.log('No song found for the query.');
-                    lyricsDiv.innerText = 'Не нашли текст этой песни.'
+                    lyricsDiv.innerHTML = 'Не нашли текст этой песни. tg: <a href="https://t.me/zadevv" target="_blank">@zadevv</a>'
                 }
             } else {
                 console.log('Error fetching Genius data.');
