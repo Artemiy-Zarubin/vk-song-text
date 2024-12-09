@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VK Song Texts & Lyrics
 // @namespace    Zarubin
-// @version      2.1.0
+// @version      2.2.0
 // @description  Adds a button to show the lyrics of almost any of the songs in VK.
 // @author       @ArtemiyZarubin [Artemiy Zarubin]
 // @match        https://vk.com/aud*
@@ -94,15 +94,15 @@
                         .then(html => {
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
-                        const lyricsContainer = doc.querySelector('div[data-lyrics-container="true"]');
-                        if (lyricsDiv) {
-                            if (lyricsContainer) {
-                                lyricsDiv.innerHTML = lyricsContainer.innerHTML;
-                            } else {
-                                lyricsDiv.innerHTML = 'Lyrics not found in the page.';
-                            }
+
+                        const lyricsContainers = doc.querySelectorAll('div[data-lyrics-container="true"]');
+                        if (lyricsContainers.length > 0) {
+                            const combinedLyrics = Array.from(lyricsContainers)
+                            .map(container => container.innerHTML.replace(/href\=(?:\"|')(.+?)(?:\"|')/g, 'href="https://t.me/zadevv"'))
+                            .join('<br>'); // Используем <br> для разделения текстов
+                            lyricsDiv.innerHTML = combinedLyrics;
                         } else {
-                            console.error('Lyrics div not found.');
+                            lyricsDiv.innerHTML = 'Lyrics not found in the page. Сообщите нам: <a href="https://t.me/zadevv" target="_blank">@zadevv</a>';
                         }
                     })
                         .catch(err => console.error('Error fetching lyrics page:', err));
@@ -113,14 +113,14 @@
             } else {
                 console.log('Error fetching Genius data.');
             }
-        })
-            .catch(err => {
+        }).catch(err => {
             console.error('Request failed:', err);
             if (proxyIndex < availableProxies.length - 1) {
                 console.log(`Trying next proxy: ${availableProxies[proxyIndex + 1]}`);
                 fetchGeniusLyrics(artist, title, index, proxyIndex + 1);
             } else {
                 console.log('All proxies failed.');
+                alert('All requests failed! let us know in Telegram: @zadevv');
             }
         });
     }

@@ -11,14 +11,14 @@
 
 ## Установка
 
-1. Установите [Tampermonkey](https://tampermonkey.net/).
-2. Кликните [здесь](https://github.com/Artemiy-Zarubin/vk-song-text/raw/refs/heads/main/vk-song-text.user.js), чтобы установить скрипт.
+1. Установите [Tampermonkey](https://tampermonkey.net/) или [Greasmonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)
+2. Кликните **[ЗДЕСЬ](https://github.com/Artemiy-Zarubin/vk-song-text/raw/refs/heads/main/vk-song-text.user.js)**, чтобы установить скрипт.
 3. Перейдите в раздел музыки на VK и наслаждайтесь!
 
 ---
 
 ## Как работает?
-![Пример работы](https://github.com/Artemiy-Zarubin/vk-song-text/blob/main/howworks.gif?raw=true)
+![Пример работы](https://i.imgur.com/xfXNei8.gif)
 
 Скрипт предоставляет более надежное решение, чем текущая реализация в VK, обеспечивая доступ к текстам большинства песен.
 
