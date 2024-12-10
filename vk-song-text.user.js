@@ -1,137 +1,133 @@
 // ==UserScript==
 // @name         VK Song Texts & Lyrics
 // @namespace    Zarubin
-// @version      2.2.0
+// @version      2.3.3
 // @description  Adds a button to show the lyrics of almost any of the songs in VK.
 // @author       @ArtemiyZarubin [Artemiy Zarubin]
 // @match        https://vk.com/aud*
 // @require      http://code.jquery.com/jquery-latest.js
+// @grant        unsafeWindow
 // @updateURL    https://github.com/Artemiy-Zarubin/vk-song-text/raw/refs/heads/main/vk-song-text.user.js
 // @downloadURL  https://github.com/Artemiy-Zarubin/vk-song-text/raw/refs/heads/main/vk-song-text.user.js
 // ==/UserScript==
-
-// hi
 (function() {
     let songIndex = 0;
-    const songContainerMap = new Map();
+    const availableProxies = ["https://api.allorigins.win/raw?url=", "https://cors-anywhere.herokuapp.com/"];
 
-    $(document).on("mouseenter", ".audio_row", function() {
-        const currentElement = $(this);
-        const songId = currentElement.parent().attr('data-index');
-
-        if (songId) return;
-
-        const uniqueIndex = songIndex++;
-
-        if ($("[data-index='" + uniqueIndex + "']").length > 0) return;
-
-        currentElement.wrap("<div class='song' data-index='" + uniqueIndex + "'></div>");
-
-        const currentSong = $("[data-index='" + uniqueIndex + "']");
-        const artist = escapeHTML(currentSong.find('.audio_row__performers a').first().text());
-        const title = escapeHTML(currentSong.find('.audio_row__title_inner').text());
-
-        const buttons = `
-            <div class="lyrics-buttons" data-index="${uniqueIndex}" style="padding: 5px; font-family: Arial, sans-serif;">
-                <button id="getGeniusLyricsBtn${uniqueIndex}" style="display: inline-block; font-size: 11px; color: #007bff; background-color: transparent; border: 1px solid #007bff; padding: 2px 3px; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease; margin-top: 1px;">Текст</button>
-                <a target="_blank" href="https://www.google.com/search?q=${encodeURI(artist + ' - ' + title + ' lyrics')}" style="display: inline-block; margin-bottom: 3px; font-size: 8px; color: #007bff; text-decoration: none; padding: 2px 3px; border: 1px solid #007bff; border-radius: 4px; transition: background-color 0.3s ease;">Поиск</a>
-                <a target="_blank" href="https://www.google.com/search?q=${encodeURI(artist + ' - ' + title + ' перевод')}" style="display: inline-block; margin-bottom: 3px; font-size: 8px; color: #007bff; text-decoration: none; padding: 2px 3px; border: 1px solid #007bff; border-radius: 4px; transition: background-color 0.3s ease;">Перевод</a>
-                <div id="lyricsContainer${uniqueIndex}" style="font-size: 11px; padding-top: 5px; color: #333;"></div>
-            </div>`;
-        currentSong.append(buttons);
-        songContainerMap.set(songId, uniqueIndex);
-
-        $('#getGeniusLyricsBtn' + uniqueIndex).on('click', function() {
-            $('#getGeniusLyricsBtn'+uniqueIndex).hide();
-            fetchGeniusLyrics(artist, title, uniqueIndex);
-        });
-    });
-
-    $(document).on("mouseleave", ".song", function() {
-        const uniqueIndex = $(this).data('index');
-        if (uniqueIndex !== undefined) {
-            const buttons = $("[data-index='" + uniqueIndex + "']").find('.lyrics-buttons');
-            buttons.hide();
+    function escapeHTML(text) {
+        const map = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return text.replace(/[<>"']/g, m => map[m]);
+    }
+    const ourtg = `<a href="https://t.me/zadevv">@zadevv</a>`
+    function openModalWithLyrics(lyricsHTML, name, cr, photo) {
+        function getAudioPlayer() {
+            return unsafeWindow.audioPlayer || unsafeWindow.ap;
         }
-    });
+        const audioPlayer = getAudioPlayer();
+        if (audioPlayer) {
+            const bv = new unsafeWindow.AudioPlayerUI({ audioPlayer: audioPlayer });
+            bv.lyrics.modal.open({
+                "audio": [0, 0, "hi", name, cr], // 13
+                "playlist": null,
+                "context": "my:recent_audios"
+            });
 
-    $(document).on("mouseenter", ".song", function() {
-        const uniqueIndex = $(this).data('index');
-        if (uniqueIndex !== undefined) {
-            const buttons = $("[data-index='" + uniqueIndex + "']").find('.lyrics-buttons');
+            setTimeout(() => {
+                const modalContent = document.querySelector('.AudioLyricsModal__content--UNINs');
+                const AudioPhoto = document.querySelector('[class^="AudioCover"]');
 
-            if (!buttons.is(':visible')) {
-                buttons.show();
-            }
+                if (modalContent) {
+                    AudioPhoto.innerHTML = `<img src='${photo}' height='80' width='80'>`;
+                    modalContent.style.overflow = 'auto';
+                    modalContent.style.marginBottom = '30px';
+                    modalContent.style.display = 'block';
+                    modalContent.style.textAlign = 'center';
+
+                    modalContent.innerHTML = `<br><br><br><b style="color: #007bff;">by @ArtemiyZarubin | Наш чат: ${ourtg}</b><br>`+lyricsHTML;
+                }
+            }, 200);
+        } else {
+            console.log("Аудиоплеер не найден.");
         }
-    });
+    }
 
-    const availableProxies = [
-        "https://api.allorigins.win/raw?url=",
-        "https://cors-anywhere.herokuapp.com/"
-    ];
-
-    function fetchGeniusLyrics(artist, title, index, proxyIndex = 0) {
+    function fetchGeniusLyrics(artist, photo, title, index, proxyIndex = 0) {
         const query = encodeURI(artist + " - " + title);
         const apiUrl = `https://genius.com/api/search/multi?q=${query}`;
         const proxyUrl = availableProxies[proxyIndex];
-
-        const lyricsDiv = document.getElementById(`lyricsContainer${index}`);
-        lyricsDiv.innerHTML = 'Ищем текст.. tg: <a href="https://t.me/zadevv" target="_blank">@zadevv</a>';
+        const lyricsDiv = $(`#lyricsContainer${index}`);
+        lyricsDiv.html(`Ищем текст.. tg: ${ourtg}`);
 
         fetch(proxyUrl + apiUrl)
             .then(response => response.json())
             .then(data => {
             if (data.meta.status === 200) {
-                if (!data.response?.sections[1].hits) return console.log('No song found');
                 const song = data.response?.sections[1]?.hits?.[0]?.result;
                 if (song && song.relationships_index_url) {
-                    let pathsong = song.relationships_index_url.replace('sample', 'lyrics');
-                    console.log('Song Genius URL:', pathsong);
-
-                    fetch(proxyUrl + pathsong)
+                    const lyricsUrl = song.relationships_index_url.replace('sample', 'lyrics');
+                    fetch(proxyUrl + lyricsUrl)
                         .then(response => response.text())
                         .then(html => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-
+                        const doc = new DOMParser().parseFromString(html, 'text/html');
                         const lyricsContainers = doc.querySelectorAll('div[data-lyrics-container="true"]');
-                        if (lyricsContainers.length > 0) {
-                            const combinedLyrics = Array.from(lyricsContainers)
-                            .map(container => container.innerHTML.replace(/href\=(?:\"|')(.+?)(?:\"|')/g, 'href="https://t.me/zadevv"'))
-                            .join('<br>'); // Используем <br> для разделения текстов
-                            lyricsDiv.innerHTML = combinedLyrics;
-                        } else {
-                            lyricsDiv.innerHTML = 'Lyrics not found in the page. Сообщите нам: <a href="https://t.me/zadevv" target="_blank">@zadevv</a>';
-                        }
+                        const lyricsHTML = Array.from(lyricsContainers)
+                        .map(container => container.innerHTML.replace(/href=["'].*?["']/g, 'href="https://t.me/zadevv" target="_blank"'))
+                        .join('<br>');
+
+                        lyricsDiv.html(`with love ${ourtg}`);
+                        openModalWithLyrics(lyricsHTML || `Текст не найден. ${ourtg}`, title, artist, photo);
                     })
-                        .catch(err => console.error('Error fetching lyrics page:', err));
+                        .catch(() => lyricsDiv.html(`Ошибка загрузки текста. ${ourtg}`));
                 } else {
-                    console.log('No song found for the query.');
-                    lyricsDiv.innerHTML = 'Не нашли текст этой песни. tg: <a href="https://t.me/zadevv" target="_blank">@zadevv</a>'
+                    lyricsDiv.html(`Песня не найдена. ${ourtg}`);
                 }
-            } else {
-                console.log('Error fetching Genius data.');
             }
-        }).catch(err => {
-            console.error('Request failed:', err);
+        })
+            .catch(() => {
             if (proxyIndex < availableProxies.length - 1) {
-                console.log(`Trying next proxy: ${availableProxies[proxyIndex + 1]}`);
-                fetchGeniusLyrics(artist, title, index, proxyIndex + 1);
+                fetchGeniusLyrics(artist, photo, title, index, proxyIndex + 1);
             } else {
-                console.log('All proxies failed.');
-                alert('All requests failed! let us know in Telegram: @zadevv');
+                lyricsDiv.html(`Все запросы не удались. Сообщите: ${ourtg}`);
             }
         });
     }
 
-    function escapeHTML(text) {
-        const map = {
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;'
-        };
-        return text.replace(/[<>"']/g, function(m) { return map[m]; });
-    }
+    $(document).on("mouseenter", ".audio_row", function() {
+        const element = $(this);
+        const songId = element.parent().attr('data-index');
+        if (songId) return;
+
+        const uniqueIndex = songIndex++;
+        if ($(`[data-index="${uniqueIndex}"]`).length > 0) return;
+
+        element.wrap(`<div class='song' data-index="${uniqueIndex}"></div>`);
+        const container = $(`[data-index="${uniqueIndex}"]`);
+
+        const photoURL = container.find('.audio_row__cover').attr('src');
+        const artist = escapeHTML(container.find('.audio_row__performers a').first().text());
+        const title = escapeHTML(container.find('.audio_row__title_inner').text());
+
+        const buttons = `
+            <div class="lyrics-buttons" data-index="${uniqueIndex}" style="padding: 5px; font-family: Arial, sans-serif;">
+                <button id="getGeniusLyricsBtn${uniqueIndex}" style="font-size: 11px; color: #007bff; background: transparent; border: 1px solid #007bff; padding: 2px 3px; border-radius: 4px; cursor: pointer; transition: background-color 0.3s; margin-top: 1px;">Текст</button>
+                <a target="_blank" href="https://www.google.com/search?q=${encodeURI(artist + ' - ' + title + ' lyrics')}" style="font-size: 8px; color: #007bff; text-decoration: none; border: 1px solid #007bff; padding: 2px 3px; border-radius: 4px; margin: 1px;">Поиск</a>
+                <a target="_blank" href="https://www.google.com/search?q=${encodeURI(artist + ' - ' + title + ' перевод')}" style="font-size: 8px; color: #007bff; text-decoration: none; border: 1px solid #007bff; padding: 2px 3px; border-radius: 4px; margin: 1px;">Перевод</a>
+                <div id="lyricsContainer${uniqueIndex}" style="font-size: 11px; padding-top: 5px; color: #333;"></div>
+            </div>`;
+        container.append(buttons);
+
+        $(`#getGeniusLyricsBtn${uniqueIndex}`).on('click', function() {
+            fetchGeniusLyrics(artist, photoURL, title, uniqueIndex);
+        });
+    });
+
+    $(document).on("mouseleave", ".song", function() {
+        const index = $(this).data('index');
+        $(`[data-index="${index}"] .lyrics-buttons`).hide();
+    });
+
+    $(document).on("mouseenter", ".song", function() {
+        const index = $(this).data('index');
+        $(`[data-index="${index}"] .lyrics-buttons`).show();
+    });
 })();
